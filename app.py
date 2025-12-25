@@ -1,10 +1,18 @@
 from flask import Flask, request, jsonify
 import joblib
 import numpy as np
-
+import joblib
 # Initialize Flask app
 app = Flask(__name__)
 
+
+# Define a filename for the exported scaler
+scaler_filename = 'scaler.joblib'
+
+# Export the trained scaler object using joblib.dump()
+joblib.dump(scaler, scaler_filename)
+
+print(f"StandardScaler object exported successfully to '{scaler_filename}'")
 # Load trained model
 model = joblib.load("logistic_regression_model.joblib")
 
