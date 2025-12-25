@@ -1,57 +1,45 @@
 from flask import Flask, request, jsonify
 import joblib
 import numpy as np
-import joblib
 import os
-# Initialize Flask app
+
 app = Flask(__name__)
 
+# Load model & scaler safely
+MODEL_PATH = "logistic_regression_model.joblib"
+SCALER_PATH = "scaler.joblib"
 
-# Define a filename for the exported scaler
-scaler_filename = 'scaler.joblib'
+model = joblib.load(MODEL_PATH)
+scaler = joblib.load(SCALER_PATH)
 
-# Export the trained scaler object using joblib.dump()
-joblib.dump(scaler, scaler_filename)
-
-print(f"StandardScaler object exported successfully to '{scaler_filename}'")
-# Load trained model
-model = joblib.load("logistic_regression_model.joblib")
-
-@app.route("/", methods=["GET"])
+@app.route("/")
 def home():
-    return jsonify({
-        "message": "ML Prediction API is running"
-    })
+    return jsonify({"message": "Stock Prediction API is running"})
 
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
         data = request.get_json()
 
-
         features = data.get("features")
+        if features is None:
+            return jsonify({"error": "features key missing"}), 400
 
-        if not features:
-            return jsonify({"error": "No features provided"}), 400
+        X = np.array(features).reshape(1, -1)
+        X_scaled = scaler.transform(X)
 
-        # Convert input to numpy array
-        input_data = np.array(features).reshape(1, -1)
-
-        # Prediction
-        prediction = model.predict(input_data)
-        probability = model.predict_proba(input_data)
+        prediction = model.predict(X_scaled)[0]
+        probability = model.predict_proba(X_scaled)[0].tolist()
 
         return jsonify({
-            "prediction": int(prediction[0]),
-            "probability": probability.tolist()
+            "prediction": int(prediction),
+            "probability": probability
         })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
