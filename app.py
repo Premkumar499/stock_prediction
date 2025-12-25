@@ -1,14 +1,15 @@
 from flask import Flask, request, jsonify
-import joblib
 import numpy as np
+import joblib
 import os
 
 app = Flask(__name__)
 
-# Load model & scaler safely
+# Paths
 MODEL_PATH = "logistic_regression_model.joblib"
 SCALER_PATH = "scaler.joblib"
 
+# Load model & scaler
 model = joblib.load(MODEL_PATH)
 scaler = joblib.load(SCALER_PATH)
 
@@ -21,18 +22,17 @@ def predict():
     try:
         data = request.get_json()
 
-        features = data.get("features")
-        if features is None:
+        if "features" not in data:
             return jsonify({"error": "features key missing"}), 400
 
-        X = np.array(features).reshape(1, -1)
+        X = np.array(data["features"]).reshape(1, -1)
         X_scaled = scaler.transform(X)
 
-        prediction = model.predict(X_scaled)[0]
+        prediction = int(model.predict(X_scaled)[0])
         probability = model.predict_proba(X_scaled)[0].tolist()
 
         return jsonify({
-            "prediction": int(prediction),
+            "prediction": prediction,
             "probability": probability
         })
 
