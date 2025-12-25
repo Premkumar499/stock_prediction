@@ -1,0 +1,9 @@
+import joblib
+
+# Define a filename for the exported scaler
+scaler_filename = 'scaler.joblib'
+
+# Export the trained scaler object using joblib.dump()
+joblib.dump(scaler, scaler_filename)
+
+print(f"StandardScaler object exported successfully to '{scaler_filename}'")
