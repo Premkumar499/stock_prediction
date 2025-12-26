@@ -5,40 +5,20 @@ import os
 
 app = Flask(__name__)
 
-# Paths
-MODEL_PATH = "logistic_regression_model.joblib"
-SCALER_PATH = "scaler.joblib"
-
-# Load model & scaler
-model = joblib.load(MODEL_PATH)
-scaler = joblib.load(SCALER_PATH)
+model = joblib.load("logistic_regression_model.joblib")
+scaler = joblib.load("scaler.joblib")
 
 @app.route("/")
 def home():
-    return jsonify({"message": "Stock Prediction API is running"})
+    return {"status": "Stock Prediction API running"}
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    try:
-        data = request.get_json()
-
-        if "features" not in data:
-            return jsonify({"error": "features key missing"}), 400
-
-        X = np.array(data["features"]).reshape(1, -1)
-        X_scaled = scaler.transform(X)
-
-        prediction = int(model.predict(X_scaled)[0])
-        probability = model.predict_proba(X_scaled)[0].tolist()
-
-        return jsonify({
-            "prediction": prediction,
-            "probability": probability
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
+    data = request.get_json()
+    X = np.array(data["features"]).reshape(1, -1)
+    X = scaler.transform(X)
+    pred = int(model.predict(X)[0])
+    return {"prediction": pred}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
