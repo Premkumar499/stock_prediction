@@ -10,7 +10,28 @@ scaler = joblib.load("scaler.joblib")
 
 @app.route("/")
 def home():
-    return {"status": "Stock Prediction API running"}
+    return jsonify({
+        "status": "Stock Prediction API running",
+        "endpoints": {
+            "POST /predict": "Make a stock price prediction"
+        },
+        "usage": {
+            "method": "POST",
+            "url": "/predict",
+            "content_type": "application/json",
+            "input": {
+                "features": "[Open, High, Low, Volume]"
+            },
+            "example_request": {
+                "features": [450.5, 455.0, 448.0, 5000000]
+            },
+            "example_response": {
+                "prediction": 1,
+                "meaning": "0 = Price will decrease, 1 = Price will increase"
+            }
+        },
+        "curl_example": "curl -X POST https://stock-prediction-2-tztm.onrender.com/predict -H 'Content-Type: application/json' -d '{\"features\": [450.5, 455.0, 448.0, 5000000]}'"
+    })
 
 @app.route("/predict", methods=["POST"])
 def predict():
